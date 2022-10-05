@@ -26,5 +26,7 @@ func main() {
 	} else if perintah == "3" {
 		helpers.SetBiodata("3", "keong", "jl. wumbo", "mahasiswa", "gk ada alasan")
 		fmt.Print("\n")
+	} else {
+		fmt.Print("ID tidak ditemukan!")
 	}
 }
