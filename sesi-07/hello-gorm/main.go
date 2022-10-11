@@ -5,19 +5,9 @@ import (
 	"fmt"
 	"hello-gorm/database"
 	"hello-gorm/models"
-	"time"
 
 	"gorm.io/gorm"
 )
-
-type Product struct {
-	ID        uint   `gorm:"primaryKey"`
-	Name      string `gorm:"not null;type:varchar(191)"`
-	Brand     string `gorm:"not null;type:varchar(191)"`
-	UserId    uint
-	CreatedAt time.Time
-	UpdatedAt time.Time
-}
 
 func main() {
 	database.StartDB()
@@ -43,7 +33,6 @@ func createUser(email string) {
 		return
 	}
 	fmt.Println("New User Data :", User)
-
 }
 
 func getUserById(id uint) {

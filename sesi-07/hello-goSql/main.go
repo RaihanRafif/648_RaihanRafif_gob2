@@ -45,10 +45,10 @@ func main() {
 
 	fmt.Println("Succesfully connected to database")
 
-	// CreateEmployee()
+	CreateEmployee()
 	// GetEmployees()
 	// UpdateEmployee()
-	DeleteEmployee()
+	// DeleteEmployee()
 }
 
 func CreateEmployee() {
