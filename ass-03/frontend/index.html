@@ -1,0 +1,149 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <script src="https://ajax.googleapis.com/ajax/libs/jquery/3.6.0/jquery.min.js"></script>
+    <script language="JavaScript" type="text/javascript" src="/js/jquery-1.2.6.min.js"></script>
+    <script language="JavaScript" type="text/javascript" src="/js/jquery-ui-personalized-1.5.2.packed.js"></script>
+    <script language="JavaScript" type="text/javascript" src="/js/sprinkle.js"></script>
+
+
+    <link rel="stylesheet" href="index.css">
+    <title>TUGAS 3</title>
+</head>
+
+<body>
+
+    <div class="main">
+        <table class="styled-table">
+            <thead>
+                <tr>
+                    <th>ID</th>
+                    <th>Water</th>
+                    <th>Status</th>
+                    <th>Wind</th>
+                    <th>Status</th>
+                </tr>
+            </thead>
+            <tbody id="bodyTable">
+                <!-- <tr>
+                    <td>Dom</td>
+                    <td>6000</td>
+                </tr> -->
+                <!-- and so on... -->
+            </tbody>
+        </table>
+    </div>
+
+    <script>
+        const url = 'http://localhost:4000/weather';
+        const bodyTable = document.getElementById('bodyTable');
+        const list = document.createDocumentFragment();
+
+        (function worker() {
+            $.ajax({
+                url: url,
+                success: function (data) {
+                    let weatherData = data;
+                    weatherData.map(function (data) {
+                        let tr = document.createElement('tr');
+                        let idValue = document.createElement('td');
+                        let windValue = document.createElement('td');
+                        let windStatus = document.createElement('td');
+                        let waterValue = document.createElement('td');
+                        let waterStatus = document.createElement('td');
+
+                        if (data.water <= 5) {
+                            waterStatus.innerHTML = "Aman"
+                        } else if (data.water >= 6 || data.water <= 8) {
+                            waterStatus.innerHTML = "Siaga"
+                        } else {
+                            waterStatus.innerHTML = "Bahaya"
+                        }
+
+                        if (data.wind <= 6) {
+                            windStatus.innerHTML = "Aman"
+                        } else if (data.wind >= 7 || data.wind <= 15) {
+                            windStatus.innerHTML = "Siaga"
+                        } else {
+                            windStatus.innerHTML = "Bahaya"
+                        }
+
+                        idValue.innerHTML = data.id
+                        windValue.innerHTML = data.wind
+                        waterValue.innerHTML = data.water
+                        // name.innerHTML = `${author.name}`;
+                        // email.innerHTML = `${author.email}`;
+                        tr.appendChild(idValue)
+                        tr.appendChild(waterValue)
+                        tr.appendChild(waterStatus)
+                        tr.appendChild(windValue)
+                        tr.appendChild(windStatus)
+                        bodyTable.appendChild(tr)
+                                });
+                    },
+                        complete: function () {
+                            // Schedule the next request when the current one's complete
+                            setTimeout(worker, 5000);
+                        }
+            });
+        })();
+
+        // fetch(url)
+        //     .then((response) => {
+        //         return response.json();
+        //     })
+        //     .then((data) => {
+        //         console.log(data);
+        //         let weatherData = data;
+        //         weatherData.map(function (data) {
+        //             let tr = document.createElement('tr');
+        //             let idValue  = document.createElement('td');
+        //             let windValue = document.createElement('td');
+        //             let windStatus = document.createElement('td');
+        //             let waterValue = document.createElement('td');
+        //             let waterStatus = document.createElement('td');
+
+        //             if(data.water <=5){
+        //                 waterStatus.innerHTML = "Aman"
+        //             } else if (data.water >=6 || data.water <= 8) {
+        //                 waterStatus.innerHTML = "Siaga"
+        //             } else {
+        //                 waterStatus.innerHTML = "Bahaya"
+        //             }
+
+        //             if(data.wind <=6){
+        //                 windStatus.innerHTML = "Aman"
+        //             } else if (data.wind >=7 || data.wind <= 15) {
+        //                 windStatus.innerHTML = "Siaga"
+        //             } else {
+        //                 windStatus.innerHTML = "Bahaya"
+        //             }
+
+        //             idValue.innerHTML = data.id
+        //             windValue.innerHTML = data.wind
+        //             waterValue.innerHTML = data.water
+        //             // name.innerHTML = `${author.name}`;
+        //             // email.innerHTML = `${author.email}`;
+        //             tr.appendChild(idValue)
+        //             tr.appendChild(waterValue)
+        //             tr.appendChild(waterStatus)
+        //             tr.appendChild(windValue)
+        //             tr.appendChild(windStatus)
+        //             bodyTable.appendChild(tr)
+        //         });
+        //     }).
+        //     catch(function (error) {
+        //         console.log(error);
+        //     });
+
+        // bodyTable.appendChild(list);
+
+    </script>
+    <script src="https://ajax.googleapis.com/ajax/libs/jquery/3.6.0/jquery.min.js"></script>
+</body>
+
+</html>

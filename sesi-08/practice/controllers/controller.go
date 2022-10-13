@@ -1,6 +1,7 @@
 package controllers
 
 import (
+	"fmt"
 	"net/http"
 	"practice/structs"
 
@@ -55,6 +56,7 @@ func (idb *InDB) CreatePerson(c *gin.Context) {
 		result gin.H
 	)
 	first_name := c.PostForm("first_name")
+	fmt.Println("PPPp", first_name)
 	last_name := c.PostForm("last_name")
 	person.First_Name = first_name
 	person.Last_Name = last_name

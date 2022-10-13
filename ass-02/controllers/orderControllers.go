@@ -3,54 +3,28 @@ package controllers
 import (
 	"ass-2/database"
 	"ass-2/models"
-	"errors"
-	"fmt"
+	"net/http"
 
-	"gorm.io/gorm"
+	"github.com/gin-gonic/gin"
 )
 
-func createOrder(CustomerName string) {
+func CreateOrder(c *gin.Context) {
 	db := database.GetDB()
-	Order := models.Order{
-		CustomerName: CustomerName,
-	}
+	Order := models.Order{}
 
-	err := db.Create(&Order).Error
+	err := db.Debug().Create(&Order).Error
 
 	if err != nil {
-		fmt.Println("Error creating order data:", err)
+		c.JSON(http.StatusBadRequest, gin.H{
+			"error":   "Bad Request",
+			"message": err.Error(),
+		})
 		return
 	}
-	fmt.Println("New Order Data :", Order)
-}
 
-func getOrderById(id uint) {
-	db := database.GetDB()
-
-	order := models.Order{}
-
-	err := db.First(&order, "id = ?", id).Error
-
-	if err != nil {
-		if errors.Is(err, gorm.ErrRecordNotFound) {
-			fmt.Println("Order data not found")
-			return
-		}
-		print("error finding order:", err)
-	}
-	fmt.Printf("Order Data: %+v \n", order)
-}
-
-func updateOrderById(id uint, CustomerName string) {
-	db := database.GetDB()
-
-	order := models.Order{}
-
-	err := db.Model(&order).Where("id = ?", id).Updates(models.Order{CustomerName: CustomerName}).Error
-
-	if err != nil {
-		fmt.Println("Error updating order data:", err)
-		return
-	}
-	fmt.Printf("Update order's email: %+v \n", order.CustomerName)
+	c.JSON(http.StatusCreated, gin.H{
+		"orderedAt":    User.ID,
+		"customerName": User.Email,
+		"items":        User.FullName,
+	})
 }
