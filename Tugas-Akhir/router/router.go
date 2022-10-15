@@ -26,6 +26,8 @@ func StartApp() *gin.Engine {
 		photoRouter.POST("/", middleware.UserAuthorization(), controllers.PhotoUploader)
 		r.StaticFS("/file", http.Dir("assets"))
 		photoRouter.GET("/", middleware.UserAuthorization(), controllers.GetPhoto)
+		photoRouter.PUT("/:photoId", middleware.UserAuthorization(), controllers.UpdatePhoto)
+		photoRouter.DELETE("/:photoId", middleware.UserAuthorization(), controllers.DeletePhoto)
 	}
 
 	return r

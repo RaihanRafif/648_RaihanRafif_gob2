@@ -98,8 +98,6 @@ func UserUpdate(c *gin.Context) {
 		c.ShouldBind(&User)
 	}
 
-	User.ID = userID
-
 	err := db.Model(&User).Where("id = ?", userID).Updates(models.User{Email: User.Email, UserName: User.UserName}).Error
 
 	if err != nil {

@@ -1,7 +1,6 @@
 package controllers
 
 import (
-	"encoding/json"
 	"fmt"
 	"io"
 	"log"
@@ -22,7 +21,6 @@ func PhotoUploader(c *gin.Context) {
 	db := database.GetDB()
 	userData := c.MustGet("userData").(jwt.MapClaims)
 	contentType := helpers.GetContentType(c)
-
 	Photo := models.Photo{}
 	userID := uint(userData["id"].(float64))
 
@@ -81,7 +79,7 @@ func GetPhoto(c *gin.Context) {
 	userData := c.MustGet("userData").(jwt.MapClaims)
 	contentType := helpers.GetContentType(c)
 
-	Photo := models.Photo{}
+	Photo := []models.Photo{}
 	userID := uint(userData["id"].(float64))
 
 	if contentType == appJson {
@@ -90,19 +88,71 @@ func GetPhoto(c *gin.Context) {
 		c.ShouldBind(&Photo)
 	}
 
-	result := db.Find(&Photo, "user_id = ?", userID)
+	db.Find(&Photo, "user_id = ?", userID)
 
-	p, _ := json.Marshal(result)
-	err := json.Unmarshal(p, &result)
+	c.JSON(http.StatusOK, gin.H{
+		"result": Photo,
+	})
+}
+
+func UpdatePhoto(c *gin.Context) {
+	db := database.GetDB()
+	userData := c.MustGet("userData").(jwt.MapClaims)
+	contentType := helpers.GetContentType(c)
+	userID := uint(userData["id"].(float64))
+	Photo := models.Photo{}
+	photoId, _ := strconv.Atoi(c.Param("photoId"))
+
+	if contentType == appJson {
+		c.ShouldBindJSON(&Photo)
+	} else {
+		c.ShouldBind(&Photo)
+	}
+
+	err := db.Model(&Photo).Where("id = ?", photoId).Where("user_id = ?", userID).Updates(models.Photo{Title: Photo.Title, Caption: Photo.Caption, PhotoUrl: Photo.PhotoUrl}).Error
+
 	if err != nil {
-		fmt.Println(err)
+		c.JSON(http.StatusBadRequest, gin.H{
+			"err":     "Bad Request",
+			"message": err.Error(),
+		})
+		return
+	}
+	c.JSON(http.StatusOK, Photo)
+}
+
+func DeletePhoto(c *gin.Context) {
+	db := database.GetDB()
+	userData := c.MustGet("userData").(jwt.MapClaims)
+	contentType := helpers.GetContentType(c)
+	userID := uint(userData["id"].(float64))
+	photoId, _ := strconv.Atoi(c.Param("photoId"))
+	Photo := models.Photo{}
+
+	if contentType == appJson {
+		c.ShouldBindJSON(&Photo)
+	} else {
+		c.ShouldBind(&Photo)
+	}
+
+	db.First(&Photo, photoId)
+	// fmt.Println(Photo.PhotoUrl)
+	e := os.Remove("assets/" + Photo.PhotoUrl)
+	if e != nil {
+		log.Fatal(e)
+	}
+
+	err := db.Where("id = ?", photoId).Where("user_id =?", userID).Delete(&Photo).Error
+
+	if err != nil {
+		c.JSON(http.StatusBadRequest, gin.H{
+			"err":     "Bad Request",
+			"message": err.Error(),
+		})
 		return
 	}
 
-	// fmt.Print("PPPPP", result)
-
 	c.JSON(http.StatusOK, gin.H{
-		"token": err,
+		"message": "Your Photo has been sucessfully deleted",
 	})
-
 }
