@@ -53,7 +53,7 @@ func PhotoUploader(c *gin.Context) {
 	}
 
 	Photo.PhotoUrl = filename
-	Photo.UserID = userID
+	// Photo.UserID = userID
 
 	err = db.Debug().Create(&Photo).Error
 
