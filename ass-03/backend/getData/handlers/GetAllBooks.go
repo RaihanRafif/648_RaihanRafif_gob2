@@ -13,7 +13,7 @@ func (h handler) GetWeather(w http.ResponseWriter, r *http.Request) {
 	w.Header().Set("Access-Control-Allow-Headers", "Content-Type")
 	var weathers []models.Weather
 
-	if result := h.DB.Find(&weathers); result.Error != nil {
+	if result := h.DB.Last(&weathers); result.Error != nil {
 		fmt.Println(result.Error)
 	}
 

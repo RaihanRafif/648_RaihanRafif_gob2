@@ -1,3 +1,32 @@
+body{
+    /* height: 50vh; */
+    /* background-color: #009879; */
+    /* margin: 5%; */
+}
+
+.main{
+    /* height: 80vh; */
+    /* background-color: #009879; */
+    
+    
+}
+table th {
+    position: -webkit-sticky; 
+    position: sticky;
+    top: 0;
+    z-index: 1; 
+    /* background: #fff; */
+}
+.tableSection{
+    /* background-color: rgb(209, 208, 208); */
+    height:80vh ;
+    width: 23vw;
+    margin-left: auto;
+    margin-right: auto;
+    overflow-y: auto;
+
+}
+
 .styled-table {
     border-collapse: collapse;
     margin: 25px 0;
