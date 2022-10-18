@@ -2,6 +2,7 @@ package controllers
 
 import (
 	"net/http"
+	"time"
 	"tugasakhir/database"
 	"tugasakhir/helpers"
 	"tugasakhir/models"
@@ -16,6 +17,7 @@ var (
 
 func UserRegister(c *gin.Context) {
 	db := database.GetDB()
+	dt := time.Now()
 	contentType := helpers.GetContentType(c)
 	User := models.User{}
 	_, _ = db, contentType
@@ -26,6 +28,8 @@ func UserRegister(c *gin.Context) {
 		c.ShouldBind(&User)
 	}
 
+	User.CreatedAt = dt.Format("01-02-2006 15:04:05")
+	User.UpdatedAt = dt.Format("01-02-2006 15:04:05")
 	err := db.Debug().Create(&User).Error
 
 	if err != nil {
@@ -46,6 +50,7 @@ func UserRegister(c *gin.Context) {
 
 func UserLogin(c *gin.Context) {
 	db := database.GetDB()
+
 	contentType := helpers.GetContentType(c)
 	_, _ = db, contentType
 	User := models.User{}

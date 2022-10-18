@@ -3,6 +3,7 @@ package controllers
 import (
 	"net/http"
 	"strconv"
+	"time"
 	"tugasakhir/database"
 	"tugasakhir/helpers"
 	"tugasakhir/models"
@@ -11,8 +12,25 @@ import (
 	"github.com/gin-gonic/gin"
 )
 
+type GetSosmedCustomUser struct {
+	Id              int
+	UserName        string
+	ProfileImageUrl string
+}
+
+type GetSosmedCustom struct {
+	Id             int
+	Name           string
+	SocialMediaUrl string
+	UserId         int
+	CreatedAt      string
+	UpdatedAt      string
+	User           GetSosmedCustomUser
+}
+
 func PostSocialMedia(c *gin.Context) {
 	db := database.GetDB()
+	dt := time.Now()
 	userData := c.MustGet("userData").(jwt.MapClaims)
 	contentType := helpers.GetContentType(c)
 
@@ -26,6 +44,8 @@ func PostSocialMedia(c *gin.Context) {
 	}
 
 	SocialMedia.UserID = userID
+	SocialMedia.CreatedAt = dt.Format("01-02-2006 15:04:05")
+	SocialMedia.UpdatedAt = dt.Format("01-02-2006 15:04:05")
 
 	err := db.Debug().Create(&SocialMedia).Error
 
@@ -46,6 +66,8 @@ func GetSocialMedia(c *gin.Context) {
 	contentType := helpers.GetContentType(c)
 
 	SocialMedia := []models.SocialMedia{}
+	Photo := models.Photo{}
+	User := models.User{}
 	userID := uint(userData["id"].(float64))
 
 	if contentType == appJson {
@@ -54,12 +76,34 @@ func GetSocialMedia(c *gin.Context) {
 		c.ShouldBind(&SocialMedia)
 	}
 
-	db.Find(&SocialMedia, "user_id = ?", userID)
-	// db.Find(&SocialMedia, "user_id = ?", userID).Joins("INNER JOIN users ON comments.user_id=users.id")
-	// db.Model(&SocialMedia).Select("comments.user_id, comments.photo_id").Joins("left join photos on photos.user_id = %s", userID)
+	var results []GetSosmedCustom
+
+	db.Find(&SocialMedia)
+
+	db.Find(&Photo, "user_id = ?", userID)
+	db.Find(&User, "id = ?", userID)
+	customUser := GetSosmedCustomUser{
+		Id:              int(User.ID),
+		UserName:        User.UserName,
+		ProfileImageUrl: Photo.PhotoUrl,
+	}
+
+	for i := 0; i < len(SocialMedia); i++ {
+		tes := GetSosmedCustom{
+			int(SocialMedia[i].ID),
+			SocialMedia[i].Name,
+			SocialMedia[i].SocialMediaUrl,
+			int(SocialMedia[i].UserID),
+			SocialMedia[i].CreatedAt,
+			SocialMedia[i].UpdatedAt,
+			customUser,
+		}
+
+		results = append(results, tes)
+	}
 
 	c.JSON(http.StatusOK, gin.H{
-		"social_media": SocialMedia,
+		"social_medias": results,
 	})
 }
 

@@ -1,7 +1,10 @@
 package main
 
-import "ass-2/database"
+import Routers "ass2/routers"
 
 func main() {
-	database.StartDB()
+
+	var PORT = ":3000"
+
+	Routers.StartServer().Run(PORT)
 }

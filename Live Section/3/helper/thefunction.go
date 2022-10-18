@@ -1,8 +1,4 @@
-package main
-
-func main() {
-	TheFunction(2)
-}
+package helper
 
 func TheFunction(a int) bool {
 	if a%2 == 0 {
