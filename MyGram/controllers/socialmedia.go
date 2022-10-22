@@ -1,6 +1,7 @@
 package controllers
 
 import (
+	"fmt"
 	"net/http"
 	"strconv"
 	"time"
@@ -57,7 +58,13 @@ func PostSocialMedia(c *gin.Context) {
 		return
 	}
 
-	c.JSON(http.StatusCreated, SocialMedia)
+	c.JSON(http.StatusCreated, gin.H{
+		"id":               userID,
+		"name":             SocialMedia.Name,
+		"social_media_url": SocialMedia.SocialMediaUrl,
+		"user_id":          SocialMedia.UserID,
+		"created_at":       SocialMedia.CreatedAt,
+	})
 }
 
 func GetSocialMedia(c *gin.Context) {
@@ -80,7 +87,10 @@ func GetSocialMedia(c *gin.Context) {
 
 	db.Find(&SocialMedia)
 
-	db.Find(&Photo, "user_id = ?", userID)
+	fmt.Println("userID :", userID)
+	db.Where("user_id = ?", userID).First(&Photo)
+	// db.Find(&Photo, "user_id = ?", userID)
+	fmt.Println("Photo :", Photo)
 	db.Find(&User, "id = ?", userID)
 	customUser := GetSosmedCustomUser{
 		Id:              int(User.ID),
@@ -114,6 +124,7 @@ func UpdateSocialMedia(c *gin.Context) {
 	userID := uint(userData["id"].(float64))
 	SocialMedia := models.SocialMedia{}
 	socialMediaId, _ := strconv.Atoi(c.Param("socialMediaId"))
+	dt := time.Now()
 
 	if contentType == appJson {
 		c.ShouldBindJSON(&SocialMedia)
@@ -121,8 +132,7 @@ func UpdateSocialMedia(c *gin.Context) {
 		c.ShouldBind(&SocialMedia)
 	}
 
-	err := db.Model(&SocialMedia).Where("id = ?", socialMediaId).Where("user_id = ?", userID).Updates(models.SocialMedia{Name: SocialMedia.Name, SocialMediaUrl: SocialMedia.SocialMediaUrl}).Error
-
+	err := db.Where("id = ?", socialMediaId).Find(&SocialMedia).Error
 	if err != nil {
 		c.JSON(http.StatusBadRequest, gin.H{
 			"err":     "Bad Request",
@@ -130,7 +140,25 @@ func UpdateSocialMedia(c *gin.Context) {
 		})
 		return
 	}
-	c.JSON(http.StatusOK, SocialMedia)
+
+	SocialMedia.Name = c.PostForm("name")
+	SocialMedia.UpdatedAt = dt.Format("01-02-2006 15:04:05")
+	err = db.Model(&SocialMedia).Where("id = ?", socialMediaId).Where("user_id = ?", userID).Updates(models.SocialMedia{Name: SocialMedia.Name, SocialMediaUrl: SocialMedia.SocialMediaUrl}).Error
+	if err != nil {
+		c.JSON(http.StatusBadRequest, gin.H{
+			"err":     "Bad Request",
+			"message": err.Error(),
+		})
+		return
+	}
+	fmt.Println(SocialMedia)
+	c.JSON(http.StatusOK, gin.H{
+		"id":               socialMediaId,
+		"name":             SocialMedia.Name,
+		"social_media_url": SocialMedia.SocialMediaUrl,
+		"user_id":          userID,
+		"updated_at":       dt.Format("01-02-2006 15:04:05"),
+	})
 }
 
 func DeleteSocialMedia(c *gin.Context) {

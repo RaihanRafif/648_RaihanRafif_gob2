@@ -50,7 +50,7 @@ func PhotoUploader(c *gin.Context) {
 		c.ShouldBind(&Photo)
 	}
 
-	file, header, err := c.Request.FormFile("file")
+	file, header, err := c.Request.FormFile("photo_url")
 
 	if header != nil {
 		// GET Format File
@@ -90,6 +90,9 @@ func PhotoUploader(c *gin.Context) {
 
 		c.JSON(http.StatusCreated, Photo)
 	}
+	Photo.CreatedAt = dt.Format("01-02-2006 15:04:05")
+	Photo.UpdatedAt = dt.Format("01-02-2006 15:04:05")
+	Photo.UserID = userID
 
 	if err != nil {
 		err := db.Debug().Create(&Photo).Error
@@ -169,7 +172,7 @@ func UpdatePhoto(c *gin.Context) {
 		c.ShouldBind(&Photo)
 	}
 
-	file, header, err := c.Request.FormFile("file")
+	file, header, err := c.Request.FormFile("photo_url")
 	if header != nil {
 		// GET Format File
 		sourceFile := header.Filename
@@ -188,6 +191,7 @@ func UpdatePhoto(c *gin.Context) {
 		Photo.PhotoUrl = filename
 		Photo.UpdatedAt = dt.Format("01-02-2006 15:04:05")
 		Photo.UserID = userID
+		Photo.ID = uint(photoId)
 
 		err = db.Model(&Photo).Where("id = ?", photoId).Where("user_id = ?", userID).Updates(models.Photo{Title: Photo.Title, Caption: Photo.Caption, PhotoUrl: Photo.PhotoUrl}).Error
 
@@ -206,9 +210,9 @@ func UpdatePhoto(c *gin.Context) {
 		}
 
 		c.JSON(http.StatusOK, Photo)
-
+		return
 	}
-
+	Photo.ID = uint(photoId)
 	err = db.Model(&Photo).Where("id = ?", photoId).Where("user_id = ?", userID).Updates(models.Photo{Title: Photo.Title, Caption: Photo.Caption, PhotoUrl: Photo.PhotoUrl}).Error
 
 	if err != nil {
@@ -235,14 +239,17 @@ func DeletePhoto(c *gin.Context) {
 		c.ShouldBind(&Photo)
 	}
 
-	db.First(&Photo, photoId)
-	// // fmt.Println(Photo.PhotoUrl)
-	// e := os.Remove("assets/" + Photo.PhotoUrl)
-	// if e != nil {
-	// 	log.Fatal(e)
-	// }
+	err := db.First(&Photo, photoId).Error
 
-	err := db.Where("id = ?", photoId).Where("user_id =?", userID).Delete(&Photo).Error
+	if err != nil {
+		c.JSON(http.StatusBadRequest, gin.H{
+			"err":     "Bad Request",
+			"message": err.Error(),
+		})
+		return
+	}
+
+	err = db.Where("id = ?", photoId).Where("user_id =?", userID).Delete(&Photo).Error
 
 	if err != nil {
 		c.JSON(http.StatusBadRequest, gin.H{

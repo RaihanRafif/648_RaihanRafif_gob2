@@ -1,6 +1,7 @@
 package controllers
 
 import (
+	"fmt"
 	"net/http"
 	"strconv"
 	"time"
@@ -75,7 +76,7 @@ func GetComment(c *gin.Context) {
 	contentType := helpers.GetContentType(c)
 
 	Comment := []models.Comment{}
-	Photo := models.Photo{}
+
 	User := models.User{}
 	userID := uint(userData["id"].(float64))
 
@@ -86,13 +87,12 @@ func GetComment(c *gin.Context) {
 	}
 	db.Find(&Comment, "user_id = ?", userID)
 
-	// db.Model(&Comment).Select("comments.user_id, comments.photo_id").Joins("left join photos on photos.user_id = %s", userID)
-
 	var results []GetCommentCustom
 
 	for i := 0; i < len(Comment); i++ {
+		Photo := models.Photo{}
 
-		db.Find(&User, "id = ?", Comment[i].UserID)
+		db.Find(&User, "id = ?", Comment[i].PhotoID)
 		customUser := GetCommentCustomUser{
 			Id:       int(User.ID),
 			Email:    User.Email,
@@ -132,7 +132,9 @@ func UpdateComment(c *gin.Context) {
 	contentType := helpers.GetContentType(c)
 	userID := uint(userData["id"].(float64))
 	Comment := models.Comment{}
+	Photo := models.Photo{}
 	commentId, _ := strconv.Atoi(c.Param("commentId"))
+	dt := time.Now()
 
 	if contentType == appJson {
 		c.ShouldBindJSON(&Comment)
@@ -140,8 +142,26 @@ func UpdateComment(c *gin.Context) {
 		c.ShouldBind(&Comment)
 	}
 
-	err := db.Model(&Comment).Where("id = ?", commentId).Where("user_id = ?", userID).Updates(models.Comment{Message: Comment.Message}).Error
+	// err := db.Find(&Comment).Where("id = ?", commentId).Error
+	// if err != nil {
+	// 	c.JSON(http.StatusBadRequest, gin.H{
+	// 		"err":     "Bad Request",
+	// 		"message": err.Error(),
+	// 	})
+	// 	return
+	// }
 
+	// err = db.Find(&Photo, "id = ?", Comment.PhotoID).Error
+	// if err != nil {
+	// 	c.JSON(http.StatusBadRequest, gin.H{
+	// 		"err":     "Bad Request",
+	// 		"message": err.Error(),
+	// 	})
+	// 	return
+	// }
+
+	Comment.UpdatedAt = dt.Format("01-02-2006 15:04:05")
+	err := db.Model(&Comment).Where("id = ?", commentId).Where("user_id = ?", userID).Updates(models.Comment{Message: Comment.Message}).Error
 	if err != nil {
 		c.JSON(http.StatusBadRequest, gin.H{
 			"err":     "Bad Request",
@@ -149,7 +169,18 @@ func UpdateComment(c *gin.Context) {
 		})
 		return
 	}
-	c.JSON(http.StatusOK, Comment)
+
+	db.Where("id = ?", commentId).Find(&Comment)
+	db.Where("id = ?", Comment.PhotoID).Find(&Photo)
+	fmt.Println("Comment", Comment)
+	c.JSON(http.StatusOK, gin.H{
+		"id":         commentId,
+		"message":    Comment.Message,
+		"caption":    Photo.Caption,
+		"photo_url":  Photo.PhotoUrl,
+		"user_id":    userID,
+		"updated_at": dt.Format("01-02-2006 15:04:05"),
+	})
 }
 
 func DeleteComment(c *gin.Context) {

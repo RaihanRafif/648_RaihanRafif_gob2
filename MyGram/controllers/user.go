@@ -96,12 +96,14 @@ func UserUpdate(c *gin.Context) {
 	contentType := helpers.GetContentType(c)
 	userID := uint(userData["id"].(float64))
 	User := models.User{}
-
+	dt := time.Now()
 	if contentType == appJson {
 		c.ShouldBindJSON(&User)
 	} else {
 		c.ShouldBind(&User)
 	}
+
+	User.UpdatedAt = dt.Format("01-02-2006 15:04:05")
 
 	err := db.Model(&User).Where("id = ?", userID).Updates(models.User{Email: User.Email, UserName: User.UserName}).Error
 
@@ -112,7 +114,14 @@ func UserUpdate(c *gin.Context) {
 		})
 		return
 	}
-	c.JSON(http.StatusOK, User)
+
+	c.JSON(http.StatusOK, gin.H{
+		"id":         User.ID,
+		"email":      User.Email,
+		"username":   User.UserName,
+		"age":        User.Age,
+		"updated_at": User.UpdatedAt,
+	})
 }
 
 func UserDelete(c *gin.Context) {
